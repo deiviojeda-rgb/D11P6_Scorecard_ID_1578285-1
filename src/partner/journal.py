@@ -43,7 +43,7 @@ def number(label):
 
 
 def require_row(con, table, key, value):
-    # Имена таблиц передаёт только этот помощник, не пользователь.
+    # Имена таблиц передаёт только эта программа, не пользователь.
     row = con.execute('SELECT * FROM ' + table + ' WHERE ' + key + ' = ?', (value,)).fetchone()
     if row is None:
         raise ValueError('Нет записи с таким номером: ' + table)
@@ -78,8 +78,8 @@ def add_attempt(con):
     conditions = block('Условия запуска: дата, новый чат, настройки, автор, доступность инструментов')
     phase = choose('Этап: свой опыт, обмен, исправление', ('main', 'peer', 'defense'))
     context = (ROOT / 'datasets' / 'model_context.txt').read_text(encoding='utf-8')
-    if phase == 'defense':
-        context = block('Полный изменённый контекст без самого вопроса')
+    if phase in ('peer', 'defense'):
+        context = block('Полный фактически переданный контекст без самого вопроса')
     response = block('Полный ответ модели БЕЗ правок')
     sql = block('SQL модели без разметки или пустой ввод', required=False)
     result = block('Полный результат запуска SQL либо почему SQL нет или он не запускался')

@@ -1,0 +1,5 @@
+[
+  {"id":"correct", "prompt":"В учебной таблице три участника. Сколько участников?", "expected":3, "claim":3, "expected_mark":"прошёл", "origin":"synthetic_fixture"},
+  {"id":"wrong", "prompt":"В учебной таблице три участника. Сколько участников?", "expected":3, "claim":4, "expected_mark":"не прошёл", "origin":"synthetic_fixture"},
+  {"id":"unparsed", "prompt":"В учебной таблице три участника. Сколько участников?", "expected":3, "claim":null, "expected_mark":"спорно", "origin":"synthetic_fixture"}
+]
