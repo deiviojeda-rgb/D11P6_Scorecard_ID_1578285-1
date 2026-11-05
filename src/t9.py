@@ -87,8 +87,11 @@ def count_words(sentences):
     >>> count_words([["кот", "спит"], ["кот"]])
     {'кот': 2, 'спит': 1}
     """
-    # TODO: задание 2
-    raise NotImplementedError("Задание 2: count_words")
+    counts = {}
+    for sentence in sentences:
+        for word in sentence:
+            counts[word] = counts.get(word, 0) + 1
+    return counts
 
 
 def top_k(counts, k):
@@ -100,8 +103,8 @@ def top_k(counts, k):
     >>> top_k({"б": 2, "а": 2, "в": 5, "г": 1}, 3)
     ['в', 'а', 'б']
     """
-    # TODO: задание 2
-    raise NotImplementedError("Задание 2: top_k")
+    ordered = sorted(counts, key=lambda word: (-counts[word], word))
+    return ordered[:k]
 
 
 def complete(prefix, word_counts, k=3):
@@ -115,8 +118,13 @@ def complete(prefix, word_counts, k=3):
     >>> complete("ко", {"кот": 5, "кошка": 2, "кит": 9})
     ['кот', 'кошка']
     """
-    # TODO: задание 2
-    raise NotImplementedError("Задание 2: complete")
+    prefix = normalize(prefix.strip())
+    candidates = {
+        word: count
+        for word, count in word_counts.items()
+        if word.startswith(prefix)
+    }
+    return top_k(candidates, k)
 
 
 # ---------------------------------------------------------------- Задание 3
