@@ -24,8 +24,7 @@ def normalize(word):
     >>> normalize("Ёжик")
     'ежик'
     """
-    # TODO: задание 1
-    raise NotImplementedError("Задание 1: normalize")
+    return word.lower().replace("ё", "е")
 
 
 def tokenize(text):
@@ -43,8 +42,9 @@ def tokenize(text):
     >>> tokenize("По-моему - нет")
     ['по-моему', 'нет']
     """
-    # TODO: задание 1
-    raise NotImplementedError("Задание 1: tokenize")
+    text = normalize(text)
+    pattern = r"[а-яa-z0-9]+(?:-[а-яa-z0-9]+)*"
+    return re.findall(pattern, text)
 
 
 def split_sentences(text):
@@ -58,8 +58,13 @@ def split_sentences(text):
     >>> split_sentences("Привет! Как дела?\\nХорошо... Спасибо")
     [['привет'], ['как', 'дела'], ['хорошо'], ['спасибо']]
     """
-    # TODO: задание 1
-    raise NotImplementedError("Задание 1: split_sentences")
+    chunks = re.split(r"[.!?…\n]+", text)
+    result = []
+    for chunk in chunks:
+        words = tokenize(chunk)
+        if words:                      # пустые предложения выбрасываем
+            result.append(words)
+    return result
 
 
 def read_sentences(path):
