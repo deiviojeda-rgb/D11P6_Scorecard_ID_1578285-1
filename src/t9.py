@@ -359,5 +359,34 @@ def suggest(typed, model, k=3):
     >>> suggest("Кот с", build_model([["кот", "спит"], ["кот", "сидит"], ["пес", "спит"]]))
     ['сидит', 'спит']
     """
-    # TODO: бонус 6
-    raise NotImplementedError("Бонус 6: suggest")
+    if not model:
+        return []
+
+    
+    last_sentence = re.split(r"[.!?…\n]", typed)[-1]
+
+    if last_sentence and re.match(r"[а-яёa-z0-9]", last_sentence[-1]):
+        m = re.search(r"[а-яёa-z0-9]+(?:-[а-яёa-z0-9]+)*$", last_sentence)
+        prefix = m.group(0) if m else ""
+        history_text = last_sentence[:m.start()] if m else last_sentence
+    else:
+        prefix = ""
+        history_text = last_sentence
+
+    prefix = normalize(prefix)
+    history = tokenize(history_text)
+
+    
+    max_n = max(model)
+    for n in range(max_n, 0, -1):
+        context = context_for(history, n)
+        if context not in model.get(n, {}):
+            continue
+        candidates = {
+            word: count
+            for word, count in model[n][context].items()
+            if word != END and word.startswith(prefix)
+        }
+        if candidates:
+            return top_k(candidates, k)
+    return []
