@@ -139,8 +139,16 @@ def count_pairs(sentences):
     >>> count_pairs([["кот", "спит"]])
     {'<s>': {'кот': 1}, 'кот': {'спит': 1}, 'спит': {'</s>': 1}}
     """
-    # TODO: задание 3
-    raise NotImplementedError("Задание 3: count_pairs")
+    pairs = {}
+    for sentence in sentences:
+        extended = [START] + sentence + [END]
+        for i in range(len(extended) - 1):
+            first = extended[i]
+            second = extended[i + 1]
+            # pairs.setdefault(first, {}) — заводим внутренний словарь, если его нет
+            followers = pairs.setdefault(first, {})
+            followers[second] = followers.get(second, 0) + 1
+    return pairs
 
 
 def next_words(word, pairs, k=3):
@@ -153,8 +161,16 @@ def next_words(word, pairs, k=3):
     >>> next_words("кот", {"кот": {"спит": 3, "ест": 1, "</s>": 7}})
     ['спит', 'ест']
     """
-    # TODO: задание 3
-    raise NotImplementedError("Задание 3: next_words")
+    word = normalize(word)
+    if word not in pairs:
+        return []
+    # Кандидаты — всё, что шло после слова, кроме маркера конца предложения.
+    candidates = {
+        follower: count
+        for follower, count in pairs[word].items()
+        if follower != END
+    }
+    return top_k(candidates, k)
 
 
 # ---------------------------------------------------------------- Задание 4
