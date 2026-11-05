@@ -186,8 +186,17 @@ def count_ngrams(sentences, n):
     >>> count_ngrams([["кот", "спит"]], 3)
     {'<s> <s>': {'кот': 1}, '<s> кот': {'спит': 1}, 'кот спит': {'</s>': 1}}
     """
-    # TODO: задание 4
-    raise NotImplementedError("Задание 4: count_ngrams")
+    ngrams = {}
+    pad = n - 1
+    for sentence in sentences:
+        extended = [START] * pad + sentence + [END]
+        # Слово на позиции i, контекст — n-1 слов перед ним.
+        for i in range(pad, len(extended)):
+            context = " ".join(extended[i - pad:i])   # при pad=0 это ""
+            word = extended[i]
+            followers = ngrams.setdefault(context, {})
+            followers[word] = followers.get(word, 0) + 1
+    return ngrams
 
 
 def build_model(sentences, max_n=3):
@@ -196,8 +205,7 @@ def build_model(sentences, max_n=3):
     >>> sorted(build_model([["кот"]], 2))
     [1, 2]
     """
-    # TODO: задание 4
-    raise NotImplementedError("Задание 4: build_model")
+    return {n: count_ngrams(sentences, n) for n in range(1, max_n + 1)}
 
 
 def context_for(history, n):
@@ -214,8 +222,14 @@ def context_for(history, n):
     >>> context_for(["я", "не"], 1)
     ''
     """
-    # TODO: задание 4
-    raise NotImplementedError("Задание 4: context_for")
+    pad = n - 1
+    if pad == 0:
+        return ""
+    # Берём последние pad слов; если их меньше — дополняем START слева.
+    tail = history[-pad:] if pad <= len(history) else list(history)
+    missing = pad - len(tail)
+    context_words = [START] * missing + list(tail)
+    return " ".join(context_words)
 
 
 def find_context(history, model):
@@ -228,8 +242,15 @@ def find_context(history, model):
     >>> find_context(["кот", "сидит"], {1: {"": {"кот": 1}}, 2: {"кот": {"сидит": 1}}})
     (1, '')
     """
-    # TODO: задание 4
-    raise NotImplementedError("Задание 4: find_context")
+    history = [normalize(word) for word in history]
+    if not model:
+        return None
+    max_n = max(model)
+    for n in range(max_n, 0, -1):
+        context = context_for(history, n)
+        if context in model.get(n, {}):
+            return (n, context)
+    return None
 
 
 def predict(history, model, k=3):
@@ -238,8 +259,16 @@ def predict(history, model, k=3):
     found = find_context(history, model). Если None — пустой список. Иначе
     кандидаты — model[n][контекст] без маркера END; вернуть top_k кандидатов.
     """
-    # TODO: задание 4
-    raise NotImplementedError("Задание 4: predict")
+    found = find_context(history, model)
+    if found is None:
+        return []
+    n, context = found
+    candidates = {
+        word: count
+        for word, count in model[n][context].items()
+        if word != END
+    }
+    return top_k(candidates, k)
 
 
 # ---------------------------------------------------------------- Бонус 5
