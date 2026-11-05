@@ -62,7 +62,7 @@ def split_sentences(text):
     result = []
     for chunk in chunks:
         words = tokenize(chunk)
-        if words:                      # пустые предложения выбрасываем
+        if words:                      
             result.append(words)
     return result
 
@@ -145,7 +145,6 @@ def count_pairs(sentences):
         for i in range(len(extended) - 1):
             first = extended[i]
             second = extended[i + 1]
-            # pairs.setdefault(first, {}) — заводим внутренний словарь, если его нет
             followers = pairs.setdefault(first, {})
             followers[second] = followers.get(second, 0) + 1
     return pairs
@@ -164,7 +163,6 @@ def next_words(word, pairs, k=3):
     word = normalize(word)
     if word not in pairs:
         return []
-    # Кандидаты — всё, что шло после слова, кроме маркера конца предложения.
     candidates = {
         follower: count
         for follower, count in pairs[word].items()
@@ -190,9 +188,8 @@ def count_ngrams(sentences, n):
     pad = n - 1
     for sentence in sentences:
         extended = [START] * pad + sentence + [END]
-        # Слово на позиции i, контекст — n-1 слов перед ним.
         for i in range(pad, len(extended)):
-            context = " ".join(extended[i - pad:i])   # при pad=0 это ""
+            context = " ".join(extended[i - pad:i])   
             word = extended[i]
             followers = ngrams.setdefault(context, {})
             followers[word] = followers.get(word, 0) + 1
@@ -225,7 +222,6 @@ def context_for(history, n):
     pad = n - 1
     if pad == 0:
         return ""
-    # Берём последние pad слов; если их меньше — дополняем START слева.
     tail = history[-pad:] if pad <= len(history) else list(history)
     missing = pad - len(tail)
     context_words = [START] * missing + list(tail)
@@ -283,8 +279,18 @@ def generate_greedy(start, model, max_words=20):
       тоже участвует; если выбран END — остановиться; иначе дописать слово.
     Вернуть список: начальные слова + сгенерированные (без маркеров).
     """
-    # TODO: бонус 5
-    raise NotImplementedError("Бонус 5: generate_greedy")
+    words = [normalize(w) for w in start]
+    for _ in range(max_words):
+        found = find_context(words, model)
+        if found is None:
+            break
+        n, context = found
+        counts = model[n][context]
+        best = top_k(counts, 1)[0]
+        if best == END:
+            break
+        words.append(best)
+    return words
 
 
 def pick_random(counts, rng):
@@ -296,8 +302,15 @@ def pick_random(counts, rng):
     3) идём по кандидатам, накапливая сумму частот; вернуть первого,
        у которого накопленная сумма стала больше r.
     """
-    # TODO: бонус 5
-    raise NotImplementedError("Бонус 5: pick_random")
+    candidates = top_k(counts, len(counts))       
+    total = sum(counts[w] for w in candidates)
+    r = rng.random() * total
+    acc = 0
+    for word in candidates:
+        acc += counts[word]
+        if acc > r:
+            return word
+    return candidates[-1]
 
 
 def generate_random(start, model, seed, max_words=20):
@@ -306,8 +319,19 @@ def generate_random(start, model, seed, max_words=20):
     Генератор случайных чисел создаётся один раз в начале: rng = random.Random(seed).
     С одинаковым seed результат всегда одинаковый.
     """
-    # TODO: бонус 5
-    raise NotImplementedError("Бонус 5: generate_random")
+    rng = random.Random(seed)
+    words = [normalize(w) for w in start]
+    for _ in range(max_words):
+        found = find_context(words, model)
+        if found is None:
+            break
+        n, context = found
+        counts = model[n][context]
+        best = pick_random(counts, rng)
+        if best == END:
+            break
+        words.append(best)
+    return words
 
 
 # ---------------------------------------------------------------- Бонус 6
